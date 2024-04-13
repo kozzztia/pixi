@@ -3,6 +3,7 @@ import { sprites } from './sprites.js';
 import { createTank } from './details/tank.js';
 import { createBullet } from './details/bullet.js';
 import { createBoom } from './details/boom.js';
+import { createPointer } from './details/pointer.js';
 
 
 (async ()=>{
@@ -17,15 +18,15 @@ import { createBoom } from './details/boom.js';
         sprites.gun.url, 
         sprites.bullet.url,
         sprites.boom.url,
+        sprites.pointer.url
     ]
     );
-
-
-    // Intialize the application.
     await app.init({
         canvas: document.getElementById('canvas'),
         background: '#1099bb', 
-        resizeTo: window, 
+        resizeTo: window,
+        width: 1200,
+        height: 1200,
         antialias: true,
         autoDensity: true,
         });
@@ -34,86 +35,55 @@ import { createBoom } from './details/boom.js';
     document.body.appendChild(app.canvas);
 
     const tank = createTank()
-    tank.width = app.screen.height/10;
-    tank.height = app.screen.height/15;
-    tank.position.set(app.screen.width/2, app.screen.height/2);
+    tank.width = 150;
+    tank.height = 100;
 
 
     app.stage.interactive = true;
     app.stage.interactiveChildren = false;
-    app.stage.cursor = 'pointer';
+    app.stage.cursor = 'none';
     app.stage.hitArea = new Rectangle(0, 0, app.screen.width, app.screen.height);
+    app.stage.addChild(tank);
 
 
-    // mouse events
+
+    const pointer = createPointer();
+    app.cursor = 'none';
+    app.stage.addChild(pointer);
 
     app.stage.on('pointermove', (e) => {
-        const positions = e.data.getLocalPosition(app.stage)
-        tank.rotateTower(positions)
+        const angle = Math.atan2(e.data.global.y - tank.position.y, e.data.global.x - tank.position.x)
+        
+        pointer.position.set(e.data.global.x, e.data.global.y)
+        pointer.rotation = angle;
+        tank.rotateTower(angle)
     })
 
-        // shoot bullet
     app.stage.on('pointerdown', (e) => {
-        const positions = e.data.getLocalPosition(app.stage);
+        const angle = Math.atan2(e.data.global.y - tank.position.y, e.data.global.x - tank.position.x);
         const bullet = createBullet();
-        bullet.position.set(tank.x,tank.y);
-        app.stage.addChild(bullet);
-        const targetX = positions.x;
-        const targetY = positions.y;
-        const angle = Math.atan2(targetY - tank.y - tank.width / 2, targetX - tank.x - tank.height / 2);
-        bullet.rotation = angle;
-
-        app.ticker.add(()=>{
-            const dx = targetX - bullet.position.x;
-            const dy = targetY - bullet.position.y;
+        bullet.position.set(tank.position.x, tank.position.y);
+        const targetPositions = e.data.getLocalPosition(app.stage);
+    
+        app.ticker.add(() => {
+            const dx = bullet.position.x - targetPositions.x;
+            const dy = bullet.position.y - targetPositions.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance < tank.width) {
+    
+            if (distance < 10) {
                 const boom = createBoom();
-                boom.position.set(targetX, targetY);
-                app.stage.removeChild(bullet);
+                boom.position.set(targetPositions.x, targetPositions.y);
                 app.stage.addChild(boom);
-
-
+                app.stage.removeChild(bullet);
+                app.ticker.remove(); // Остановка обработчика анимации
             } else {
-                bullet.position.x += Math.cos(angle) * 100;
-                bullet.position.y += Math.sin(angle) * 100;
+                bullet.position.x += Math.cos(angle) * 20;
+                bullet.position.y += Math.sin(angle) * 20;
             }
         });
+    
+        bullet.rotation = angle;
+        app.stage.addChild(bullet);
     });
-
-
-
-    // keyboard events
-        document.addEventListener('keypress', (e) => {
-            if (e.key === 'w') {
-                tank.moveBy('+');
-                tank.move()
-            }
-            if (e.key === 's') {
-                tank.moveBy('-');
-                tank.move()
-            }
-            if(e.key === 'd'){
-                tank.rotateBy('+')
-                tank.move()
-            }
-            if(e.key === 'a'){
-                tank.rotateBy('-')
-                tank.move()
-            }
-        })
-        document.addEventListener('keyup', (e) => {
-            if (e.key === 'w' || e.key === 's' || e.key === 'a' || e.key === 'd') {
-               tank.stop()
-            }
-        })
-
-        
-        // app.ticker.add((e)=>{
-        //        tank.shoot(e)
-        // })
-
-
-    app.stage.addChild(tank);
 }
 )()

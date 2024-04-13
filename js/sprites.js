@@ -6,5 +6,6 @@ export const sprites = {
        gun: {name: 'gun', url: '../assets/parts/guns/HeavyGunB.png'},
        bullet: {name: 'bullet', url: '../assets/parts/bullet/Bullet.png'},
        boom: {name: 'boom', url: '../assets/parts/bullet/boom.png'},
+       pointer: {name: 'pointer', url: '../assets/parts/pointer/pointer.png'},
 
 }
