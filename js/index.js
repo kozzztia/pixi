@@ -43,7 +43,7 @@ import { createPointer } from './details/pointer.js';
     app.stage.interactiveChildren = false;
     app.stage.cursor = 'none';
     app.stage.hitArea = new Rectangle(0, 0, app.screen.width, app.screen.height);
-    app.stage.addChild(tank);
+
 
 
 
@@ -59,13 +59,15 @@ import { createPointer } from './details/pointer.js';
         tank.rotateTower(angle)
     })
 
+    
+
     app.stage.on('pointerdown', (e) => {
         const angle = Math.atan2(e.data.global.y - tank.position.y, e.data.global.x - tank.position.x);
         const bullet = createBullet();
         bullet.position.set(tank.position.x, tank.position.y);
         const targetPositions = e.data.getLocalPosition(app.stage);
-    
-        app.ticker.add(() => {
+        
+        const animation = () => {
             const dx = bullet.position.x - targetPositions.x;
             const dy = bullet.position.y - targetPositions.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
@@ -75,15 +77,19 @@ import { createPointer } from './details/pointer.js';
                 boom.position.set(targetPositions.x, targetPositions.y);
                 app.stage.addChild(boom);
                 app.stage.removeChild(bullet);
-                app.ticker.remove(); // Остановка обработчика анимации
+                app.ticker.remove(animation); 
             } else {
                 bullet.position.x += Math.cos(angle) * 20;
                 bullet.position.y += Math.sin(angle) * 20;
             }
-        });
+
+        };
+        
+        app.ticker.add(animation); 
     
         bullet.rotation = angle;
         app.stage.addChild(bullet);
     });
+    app.stage.addChild(tank);
 }
 )()
