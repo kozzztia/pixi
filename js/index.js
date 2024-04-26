@@ -8,8 +8,6 @@ import { sprites } from './sprites.js';
         sprites.tile.url,
         sprites.warrior.url,
         sprites.background.url,
-        sprites.treeOne.url,
-        sprites.treeTwo.url,
     ])
     
     await app.init({

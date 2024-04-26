@@ -10,13 +10,14 @@ export default class Platform extends Container{
         this.#tile = new TilingSprite(picture);
         this.#tile.width = width;
         this.#tile.height = picture.height;
-        this.#tile.x = x;
-        this.#tile.y = y - picture.height;
-
+        this.position.set(x, y - picture.height);
+        this.width = width;
+        this.height = picture.height;
+        
         this.addChild(this.#tile);
 
     }
-    updete() {
+    update() {
         this.#tile.x -= 1;
     }
 }
